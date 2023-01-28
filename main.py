@@ -1,19 +1,22 @@
-from sqlalchemy import create_engine, Engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.types import Boolean, String
+import typer
+import db
+from db import TodoItem
+
+app = typer.Typer()
 
 
-def get_engine() -> Engine:
-    engine = create_engine("sqlite+pysqlite:///my.db", echo=True)
-    return engine
+@app.command()
+def create_todo(name: str, finished: bool = True) -> None:
+    with db.session() as session:
+        session.add(TodoItem(finished=finished))
+        session.commit()
 
 
-class Base(DeclarativeBase):
-    pass
+@app.command()
+def create_tables() -> None:
+    print("Creating tables")
+    db.create_tables()
 
 
-class TodoItem(Base):
-    __tablename__ = "todo_item"
-
-    finished: Mapped[bool] = mapped_column(Boolean())
-    name: Mapped[str] = mapped_column(String())
+if __name__ == "__main__":
+    app()
